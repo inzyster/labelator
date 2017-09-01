@@ -157,7 +157,7 @@ namespace labelator
         public int Width { get; set; }
         public int Height { get; set; }
 
-        public CP437Character[][] Characters { get;set; }
+        public CP437Character[][] Characters { get; private set; }
 
         internal LineStyle GetLineStyleFor(CP437Character character)
         {
@@ -224,51 +224,32 @@ namespace labelator
                     if (character == this.Config.Joint)
                     {
                         Joint j = new Joint();
-                        if (c == 0)
+                        CP437Character left = CP437Character.NULL;
+                        CP437Character right = CP437Character.NULL;
+                        CP437Character top = CP437Character.NULL;
+                        CP437Character bottom = CP437Character.NULL;
+
+                        if (c > 0)
                         {
-                            if (r == 0)
-                            {
-                                
-                            }
-                            else if (r == Height-1)
-                            {
-                                
-                            }
-                            else 
-                            {
-                                
-                            }
+                            left = this.Characters[r][c - 1];
                         }
-                        else if (c == Width-1)
+                        if (c < Width-1)
                         {
-							if (r == 0)
-							{
-
-							}
-							else if (r == Height - 1)
-							{
-
-							}
-							else
-							{
-
-							}                            
+                            right = this.Characters[r][c + 1];
                         }
-                        else 
+                        if (r > 0)
                         {
-							if (r == 0)
-							{
-
-							}
-							else if (r == Height - 1)
-							{
-
-							}
-							else
-							{
-
-							}                            
+                            top = this.Characters[r - 1][c];
                         }
+                        if (r < Height-1)
+                        {
+                            bottom = this.Characters[r + 1][c];
+                        }
+
+                        j.Left = GetLineStyleFor(left);
+                        j.Right = GetLineStyleFor(right);
+                        j.Top = GetLineStyleFor(top);
+                        j.Bottom = GetLineStyleFor(bottom);
                         this.Characters[r][c] = j.GetCharacter();
                     }
                 }
