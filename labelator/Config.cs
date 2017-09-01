@@ -17,5 +17,8 @@ namespace labelator
 
         public int Scale { get; set; } = 1;
 
+        public string ForegroundColor = "#000";
+        public string BackgroundColor = "#fff";
+
     }
 }

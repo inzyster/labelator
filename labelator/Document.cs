@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+
+using SkiaSharp;
+
 namespace labelator
 {
 
@@ -258,8 +261,56 @@ namespace labelator
 
         public void Render(string outputFile)
         {
-            
+            int targetWidth = this.Width * Config.CharacterWidth * this.Config.Scale;
+            int targetHeight = this.Height * Config.CharacterHeight * this.Config.Scale;
+
+            using (var surface = SKSurface.Create(targetWidth, targetHeight, SKColorType.Rgba8888, SKAlphaType.Premul))
+            using (System.IO.FileStream inputStream = System.IO.File.OpenRead("437.png"))
+            using (var stream = new SKManagedStream(inputStream))
+            using (var bitmap = SKBitmap.Decode(stream))
+            using (var paint = new SKPaint())
+            {
+                SKColor fg = SKColor.Parse(this.Config.ForegroundColor);
+                SKColor bg = SKColor.Parse(this.Config.BackgroundColor);
+
+                byte[] rt = Enumerable.Range(0, 256).Select(x => x == 255 ? fg.Red : (byte)0).ToArray();
+                byte[] gt = Enumerable.Range(0, 256).Select(x => x == 255 ? fg.Green : (byte)0).ToArray();
+                byte[] bt = Enumerable.Range(0, 256).Select(x => x == 255 ? fg.Blue : (byte)0).ToArray();
+
+				paint.Color = fg;
+                paint.IsAntialias = false;
+                paint.ColorFilter = SKColorFilter.CreateTable(null, rt, gt, bt);
+                var canvas = surface.Canvas;
+                canvas.Clear(bg);
+
+                float charW = Config.CharacterWidth * this.Config.Scale;
+                float charH = Config.CharacterHeight * this.Config.Scale;
+
+                for (int r = 0; r < this.Height; r++)
+                {
+                    for (int c = 0; c < this.Width; c++)
+                    {
+                        CP437Character character = this.Characters[r][c];
+                        int bitmapRow = (int)character / 32;
+                        int bitmapColumn = (int)character % 32;
+                        int bitmapX = bitmapColumn * Config.CharacterWidth;
+                        int bitmapY = bitmapRow * Config.CharacterHeight;
+                        SKRect source = new SKRect(bitmapX, bitmapY, bitmapX + Config.CharacterWidth, bitmapY + Config.CharacterHeight);
+                        SKRect dest = new SKRect(c * charW, r * charH, (c + 1) * charW, (r + 1) * charH);
+                        canvas.DrawBitmap(bitmap, source, dest, paint);
+                    }
+                }
+
+                var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
+                using (System.IO.FileStream outStream = new System.IO.FileStream(outputFile, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write))
+                {
+                    data.SaveTo(outStream);
+                }
+            }
+
         }
+
+
 
     }
 }
