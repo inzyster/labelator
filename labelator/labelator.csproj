@@ -10,4 +10,9 @@
     <PackageReference Include="SkiaSharp" Version="1.59.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="437.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
