@@ -264,7 +264,7 @@ namespace labelator
             int targetWidth = this.Width * Config.CharacterWidth * this.Config.Scale;
             int targetHeight = this.Height * Config.CharacterHeight * this.Config.Scale;
 
-            using (var surface = SKSurface.Create(targetWidth, targetHeight, SKColorType.Rgba8888, SKAlphaType.Premul))
+            using (var surface = SKSurface.Create(targetWidth, targetHeight, SKImageInfo.PlatformColorType, SKAlphaType.Premul))
             using (System.IO.FileStream inputStream = System.IO.File.OpenRead("437.png"))
             using (var stream = new SKManagedStream(inputStream))
             using (var bitmap = SKBitmap.Decode(stream))

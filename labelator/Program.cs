@@ -11,7 +11,12 @@ namespace labelator
 #if DEBUG
             if (args.Length < 1)
             {
-                inputFile = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "Documents/label1.txt");
+                string fileName = "label.txt";
+                if (System.Environment.GetEnvironmentVariable("OS").Contains("Windows") == false)
+                {
+                    fileName = System.IO.Path.Combine("Documents", fileName);
+                }
+                inputFile = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), fileName);
             }
             if (args.Length < 2)
             {
