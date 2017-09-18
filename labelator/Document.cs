@@ -183,6 +183,19 @@ namespace labelator
                     Width = line.Length;
                 }
             }
+            List<string> linesToUse = new List<string>();
+            foreach (string line in nonEmptyLines)
+            {
+                if (line.Length == Width)
+                {
+                    linesToUse.Add(line);
+                }
+                else if (line.Length < Width)
+                {
+                    linesToUse.Add(line.PadRight(Width));
+                }
+            }
+            Height = linesToUse.Count;
             List<CP437Character[]> rows = new List<CP437Character[]>();
             for (int r = 0; r < Height; r++)
             {
@@ -192,7 +205,7 @@ namespace labelator
             Characters = rows.ToArray();
             for (int r = 0; r < Height; r++)
             {
-                string line = nonEmptyLines[r];
+                string line = linesToUse[r];
                 for (int c = 0; c < Width; c++)
                 {
                     string character = line[c].ToString();
@@ -220,7 +233,7 @@ namespace labelator
             }
             for (int r = 0; r < Height; r++)
             {
-                string line = nonEmptyLines[r];
+                string line = linesToUse[r];
                 for (int c = 0; c < Width; c++)
                 {
                     string character = line[c].ToString();

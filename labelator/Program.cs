@@ -19,8 +19,8 @@ namespace labelator
                 inputFile = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), fileName);
             }
             if (args.Length < 2)
-            {
-                outputFile = "out.png";
+            {                
+                outputFile = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(inputFile), "out.png");
             }
 
 #else
