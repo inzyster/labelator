@@ -21,7 +21,12 @@ namespace labelator
         internal LineStyle Bottom { get; set; }
         internal LineStyle Left { get; set; }
 
-        public CP437Character GetCharacter()
+        public Character GetCharacter()
+        {
+            return Character.Regular(GetCharacterValue());
+        }
+
+        public CP437Character GetCharacterValue()
         {
             Func<LineStyle, int> counter = (s) => s > LineStyle.None ? 1 : 0;
             int nonEmptyCount = counter(Top) + counter(Right) + counter(Bottom) + counter(Left);
@@ -160,16 +165,34 @@ namespace labelator
         public int Width { get; set; }
         public int Height { get; set; }
 
-        public CP437Character[][] Characters { get; private set; }
+        public Character[][] Characters { get; private set; }
 
-        internal LineStyle GetLineStyleFor(CP437Character character)
+        internal LineStyle GetLineStyleFor(Character character)
         {
-            if (character == CP437Character.BOX_DRAWINGS_LIGHT_VERTICAL || character == CP437Character.BOX_DRAWINGS_LIGHT_HORIZONTAL)
+            if (character.IsEmpty)
+                return LineStyle.None;
+
+            if (character.IsComposite)
+                return LineStyle.None;
+
+            var c = character.Values.First();
+
+            if (c == CP437Character.BOX_DRAWINGS_LIGHT_VERTICAL || c == CP437Character.BOX_DRAWINGS_LIGHT_HORIZONTAL)
                 return LineStyle.Single;
-            else if (character == CP437Character.BOX_DRAWINGS_DOUBLE_VERTICAL || character == CP437Character.BOX_DRAWINGS_DOUBLE_HORIZONTAL)
+            else if (c == CP437Character.BOX_DRAWINGS_DOUBLE_VERTICAL || c == CP437Character.BOX_DRAWINGS_DOUBLE_HORIZONTAL)
                 return LineStyle.Double;
 
             return LineStyle.None;
+        }
+
+        private Character ParseCharacter(char c)
+        {
+            if (this.Config.Mapping.ContainsKey(c))
+            {
+                return this.Config.Mapping[c];
+            }
+            CP437Character charValue = (CP437Character)c;
+            return Character.Regular(charValue);
         }
 
         public void Parse(string[] lines)
@@ -196,10 +219,10 @@ namespace labelator
                 }
             }
             Height = linesToUse.Count;
-            List<CP437Character[]> rows = new List<CP437Character[]>();
+            List<Character[]> rows = new List<Character[]>();
             for (int r = 0; r < Height; r++)
             {
-                CP437Character[] row = Enumerable.Range(0, Width).Select(x => CP437Character.SPACE).ToArray();
+                Character[] row = Enumerable.Range(0, Width).Select(x => Character.Regular(CP437Character.SPACE)).ToArray();
                 rows.Add(row);
             }
             Characters = rows.ToArray();
@@ -211,23 +234,23 @@ namespace labelator
                     string character = line[c].ToString();
                     if (character == this.Config.HorizontalDoubleLine)
                     {
-                        this.Characters[r][c] = CP437Character.BOX_DRAWINGS_DOUBLE_HORIZONTAL;
+                        this.Characters[r][c] = Character.Regular(CP437Character.BOX_DRAWINGS_DOUBLE_HORIZONTAL);
                     }
                     else if (character == this.Config.HorizontalSingleLine)
                     {
-                        this.Characters[r][c] = CP437Character.BOX_DRAWINGS_LIGHT_HORIZONTAL;
+                        this.Characters[r][c] = Character.Regular(CP437Character.BOX_DRAWINGS_LIGHT_HORIZONTAL);
                     }
                     else if (character == this.Config.VerticalDoubleLine)
                     {
-                        this.Characters[r][c] = CP437Character.BOX_DRAWINGS_DOUBLE_VERTICAL;
+                        this.Characters[r][c] = Character.Regular(CP437Character.BOX_DRAWINGS_DOUBLE_VERTICAL);
                     }
                     else if (character == this.Config.VerticalSingleLine)
                     {
-                        this.Characters[r][c] = CP437Character.BOX_DRAWINGS_LIGHT_VERTICAL;
+                        this.Characters[r][c] = Character.Regular(CP437Character.BOX_DRAWINGS_LIGHT_VERTICAL);
                     }
                     else if (character != this.Config.Joint)
                     {
-                        this.Characters[r][c] = (CP437Character)line[c];
+                        this.Characters[r][c] = ParseCharacter(line[c]);
                     }
                 }
             }
@@ -240,10 +263,8 @@ namespace labelator
                     if (character == this.Config.Joint)
                     {
                         Joint j = new Joint();
-                        CP437Character left = CP437Character.NULL;
-                        CP437Character right = CP437Character.NULL;
-                        CP437Character top = CP437Character.NULL;
-                        CP437Character bottom = CP437Character.NULL;
+                        Character left, right, top, bottom;
+                        left = right = top = bottom = default(Character);
 
                         if (c > 0)
                         {
@@ -303,14 +324,17 @@ namespace labelator
                 {
                     for (int c = 0; c < this.Width; c++)
                     {
-                        CP437Character character = this.Characters[r][c];
-                        int bitmapRow = (int)character / 32;
-                        int bitmapColumn = (int)character % 32;
-                        int bitmapX = bitmapColumn * Config.CharacterWidth;
-                        int bitmapY = bitmapRow * Config.CharacterHeight;
-                        SKRect source = new SKRect(bitmapX, bitmapY, bitmapX + Config.CharacterWidth, bitmapY + Config.CharacterHeight);
-                        SKRect dest = new SKRect(c * charW, r * charH, (c + 1) * charW, (r + 1) * charH);
-                        canvas.DrawBitmap(bitmap, source, dest, paint);
+                        Character character = this.Characters[r][c];
+                        foreach (CP437Character characterValue in character.Values)
+                        {
+                            int bitmapRow = (int)characterValue / 32;
+                            int bitmapColumn = (int)characterValue % 32;
+                            int bitmapX = bitmapColumn * Config.CharacterWidth;
+                            int bitmapY = bitmapRow * Config.CharacterHeight;
+                            SKRect source = new SKRect(bitmapX, bitmapY, bitmapX + Config.CharacterWidth, bitmapY + Config.CharacterHeight);
+                            SKRect dest = new SKRect(c * charW, r * charH, (c + 1) * charW, (r + 1) * charH);
+                            canvas.DrawBitmap(bitmap, source, dest, paint);
+                        }
                     }
                 }
 

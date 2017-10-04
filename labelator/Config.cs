@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace labelator
 {
     public class Config
@@ -19,6 +21,23 @@ namespace labelator
 
         public string ForegroundColor = "#000";
         public string BackgroundColor = "#fff";
+
+        public Dictionary<char, Character> Mapping { get; private set; } = new Dictionary<char, Character>();
+
+        public Config()
+        {
+            this.BuildDefaultMapping();
+        }
+
+        public void BuildDefaultMapping()
+        {
+            this.Mapping.Add('å', Character.Regular(CP437Character.LATIN_SMALL_LETTER_A_WITH_RING_ABOVE));
+            this.Mapping.Add('ø', Character.Composite(CP437Character.LATIN_SMALL_LETTER_O, CP437Character.SOLIDUS));
+            this.Mapping.Add('æ', Character.Regular(CP437Character.LATIN_SMALL_LETTER_AE));
+            this.Mapping.Add('Å', Character.Regular(CP437Character.LATIN_CAPITAL_LETTER_A_WITH_RING_ABOVE));
+            this.Mapping.Add('Ø', Character.Composite(CP437Character.LATIN_CAPITAL_LETTER_O, CP437Character.SOLIDUS));
+            this.Mapping.Add('Æ', Character.Regular(CP437Character.LATIN_CAPITAL_LETTER_AE));
+        }
 
     }
 }
