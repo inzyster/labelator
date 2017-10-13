@@ -2,7 +2,7 @@
 namespace labelator
 {
     
-    public enum CP437Character
+    public enum CP437Character : byte
 	{
 
         NULL =				 									0x00,
