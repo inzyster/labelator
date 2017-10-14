@@ -195,11 +195,68 @@ namespace labelator
             return Character.Regular(charValue);
         }
 
+        private const string ConfigHeader = "[Config]";
+        private const string MappingHeader = "[Mapping]";
+        private const string DocumentHeader = "[Document]";
+
         public void Parse(string[] lines)
         {
             var nonEmptyLines = lines.Select(l => l.Trim()).Where(l => string.IsNullOrEmpty(l) == false).ToList();
             Height = nonEmptyLines.Count();
-            foreach (string line in nonEmptyLines)
+            List<string> configLines = new List<string>();
+            List<string> mappingLines = new List<string>();
+            List<string> documentLines = new List<string>();
+            int configSectionIndex = nonEmptyLines.IndexOf(ConfigHeader);
+            int mappingSectionIndex = nonEmptyLines.IndexOf(MappingHeader);
+            int documentSectionIndex = nonEmptyLines.IndexOf(DocumentHeader);
+            bool justDocument = (configSectionIndex < 0 && mappingSectionIndex < 0 && documentSectionIndex < 0);
+            if (justDocument == true)
+            {
+                documentLines.AddRange(nonEmptyLines);
+            }
+            else
+            {
+                if (configSectionIndex >= 0)
+                {
+                    for (int i = configSectionIndex + 1; i < Height; i++)
+                    {
+                        string l = nonEmptyLines[i];
+                        if (l == MappingHeader || l == DocumentHeader)
+                        {
+                            break;
+                        }
+                        configLines.Add(l);
+                    }
+                }
+                if (mappingSectionIndex >= 0)
+                {
+                    for (int i = mappingSectionIndex + 1; i < Height; i++)
+                    {
+                        string l = nonEmptyLines[i];
+                        if (l == ConfigHeader || l == DocumentHeader)
+                        {
+                            break;
+                        }
+                        mappingLines.Add(l);
+                    }
+                }
+                if (documentSectionIndex >= 0)
+                {
+                    for (int i = documentSectionIndex + 1; i < Height; i++)
+                    {
+                        string l = nonEmptyLines[i];
+                        if (l == ConfigHeader || l == MappingHeader)
+                        {
+                            break;
+                        }
+                        documentLines.Add(l);
+                    }
+                }
+                this.Config.Parse(configLines);
+                this.Config.ParseMapping(mappingLines);
+            }
+            Height = documentLines.Count();
+            foreach (string line in documentLines)
             {
                 if (line.Length > Width)
                 {
@@ -207,7 +264,7 @@ namespace labelator
                 }
             }
             List<string> linesToUse = new List<string>();
-            foreach (string line in nonEmptyLines)
+            foreach (string line in documentLines)
             {
                 if (line.Length == Width)
                 {

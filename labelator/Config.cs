@@ -115,14 +115,26 @@ namespace labelator
         {
             Action<string, string> processor = (source, target) =>
             {
-                var characters = target.Length;
-                byte[] parsed = new byte[characters / 2];
-                for (int i = 0; i < characters; i += 2)
+                Character c = new Character();
+                if (target.StartsWith(@"\"))
                 {
-                    parsed[i / 2] = Convert.ToByte(target.Substring(i, 2), 16);
+                    string literal = target.Substring(1);
+                    c = Character.Composite(literal.Select(s => (CP437Character)s).ToArray());
                 }
-                Character c = Character.Composite(parsed.Select(b => (CP437Character)b).ToArray());
-                this.Mapping.Add(source.First(), c);
+                else
+                {
+                    var characters = target.Length;
+                    byte[] parsed = new byte[characters / 2];
+                    for (int i = 0; i < characters; i += 2)
+                    {
+                        parsed[i / 2] = Convert.ToByte(target.Substring(i, 2), 16);
+                    }
+                    c = Character.Composite(parsed.Select(b => (CP437Character)b).ToArray());
+                }
+                if (c.IsEmpty == false)
+                {
+                    this.Mapping.Add(source.First(), c);
+                }
             };
             this.ProcessConfigLines(lines, processor);
         }
