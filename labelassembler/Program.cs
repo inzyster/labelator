@@ -30,7 +30,7 @@ namespace labelassembler
 
             string inputContents = System.IO.File.ReadAllText(inputFile);
             Document doc = Newtonsoft.Json.JsonConvert.DeserializeObject<Document>(inputContents);
-            doc.Process(outputFile);
+            doc.Process(outputFile, System.IO.Path.GetDirectoryName(inputFile));
             return 0;
         }
     }

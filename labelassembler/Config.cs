@@ -26,6 +26,8 @@ namespace labelassembler
 
         private const string TileSizeKey = "_tile";
         private const string OutputSizeKey = "_output";
+        private const string MarginSizeKey = "_margin";
+        private const string SpacingKey = "_spacing";
 
         [JsonProperty("input")]
         public string InputImage { get; set; }
@@ -41,6 +43,8 @@ namespace labelassembler
 
         public Size TileSize => this.Sizes[TileSizeKey];
         public Size OutputSize => this.Sizes[OutputSizeKey];
+        public Size Margin => this.Sizes[MarginSizeKey];
+        public Size Spacing => this.Sizes[SpacingKey];
 
         [JsonProperty("sizes")]
         private Dictionary<string, uint[]> _sizes
