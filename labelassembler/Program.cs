@@ -24,7 +24,7 @@ namespace labelassembler
             }
 
 #else
-            inputConfigFile = args[0];
+            inputFile = args[0];
             outputFile = args[1];
 #endif
 

@@ -8,16 +8,26 @@ namespace labelassembler
 
     public class Size
     {
-        public uint Width { get; set; }
-        public uint Height { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
 
         public Size() { }
 
-        public Size(uint[] components)
+        public Size(int[] components)
         {
             this.Width = components[0];
             this.Height = components[1];
         }
+
+        public static Size operator -(Size lhs, Size rhs) => new Size { Width = lhs.Width - rhs.Width, Height = lhs.Height - rhs.Height };
+
+        public static Size operator +(Size lhs, Size rhs) => new Size { Width = lhs.Width + rhs.Width, Height = lhs.Height + rhs.Height };
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}", this.Width, this.Height);
+        }
+
     }
 
     [JsonObject]
@@ -49,7 +59,7 @@ namespace labelassembler
         public Size OutlineSize => this.Sizes[OutlineKey];
 
         [JsonProperty("sizes")]
-        private Dictionary<string, uint[]> _sizes
+        private Dictionary<string, int[]> _sizes
         {
             set
             {

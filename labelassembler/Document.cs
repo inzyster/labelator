@@ -82,6 +82,10 @@ namespace labelassembler
                 SKColor bgColor = SKColor.Parse(this.Config.BackgroundColor);
                 SKColor outlineColor = SKColor.Parse(this.Config.OutlineColor);
 
+                int left = this.Config.Margin.Width / 2;
+                int top = this.Config.Margin.Height / 2;
+
+                Size avaliableSize = this.Config.OutputSize - this.Config.Margin;
 
                 var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
                 using (System.IO.FileStream outStream = new System.IO.FileStream(outputFile, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write))
