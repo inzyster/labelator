@@ -43,9 +43,35 @@ namespace labelassembler
 
         public TileDef TileDef { get; set; }
         public Size TargetSize { get; set; }
+        public Size TargetSizeWithPadding { get; set; }
         public Size InitialSize { get; set; }
 
     }
+
+    internal class TargetSizeComparer : IComparer<Size>
+    {
+        public int Compare(Size x, Size y)
+        {
+            int maxX = Math.Max(x.Width, x.Height);
+            int maxY = Math.Max(y.Width, y.Height);
+            int result = maxX.CompareTo(maxY);
+            if (result != 0)
+                return result;
+
+            int minX = Math.Min(x.Width, x.Height);
+            int minY = Math.Min(y.Width, y.Height);
+            result = minX.CompareTo(minY);
+            if (result != 0)
+                return result;
+
+            result = new System.Random().Next(20) - 10;
+            if (result != 0)
+                return result;
+            return -2;
+
+        }
+    }
+
 
     [JsonObject]
     public class Document
@@ -104,6 +130,7 @@ namespace labelassembler
                         TargetSize = targetSize,
                         TileDef = tiledef
                     };
+                    data.TargetSizeWithPadding = targetSize + this.Config.OutlineSize + this.Config.Spacing;
                     data.InitialSize = new Size
                     {
                         Width = tileSize.Width * data.TileDef.ColumnSpan,
@@ -112,6 +139,10 @@ namespace labelassembler
                     allTiles.Add(data);
                 }
             }
+
+            var cmp = new TargetSizeComparer();
+            allTiles = allTiles.OrderByDescending(t =>t.TargetSizeWithPadding, cmp).ToList();
+
 
             using (var surface = SKSurface.Create((int)this.Config.OutputSize.Width, (int)this.Config.OutputSize.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul))
             using (System.IO.FileStream inputStream = System.IO.File.OpenRead(System.IO.Path.Combine(workDir, this.Config.InputImage)))
