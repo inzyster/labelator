@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SkiaSharp;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,6 +38,15 @@ namespace labelassembler
 
     }
 
+    public class TileData
+    {
+
+        public TileDef TileDef { get; set; }
+        public Size TargetSize { get; set; }
+        public Size InitialSize { get; set; }
+
+    }
+
     [JsonObject]
     public class Document
     {
@@ -66,8 +76,43 @@ namespace labelassembler
             }
         }
 
-        public void Process(string outputFile, string workDir)
+        public int Process(string outputFile, string workDir)
         {
+
+            Size avaliableSize = this.Config.OutputSize - this.Config.Margin;
+            double availableArea = avaliableSize.Width * avaliableSize.Height;
+
+            double requiredArea = 0.0;
+            foreach (var kvp in this.TileDefs)
+            {
+                Size size = this.Config.Sizes[kvp.Key];
+                requiredArea += (size.Width + this.Config.OutlineSize.Width + this.Config.Spacing.Width / 2) * (size.Height + this.Config.OutlineSize.Height + this.Config.Spacing.Height / 2) * kvp.Value.Count();
+            }
+
+            if (requiredArea > availableArea)
+                return 2;
+
+            List<TileData> allTiles = new List<TileData>();
+            Size tileSize = this.Config.TileSize;
+            foreach (var kvp in this.TileDefs)
+            {
+                Size targetSize = this.Config.Sizes[kvp.Key];
+                foreach (var tiledef in kvp.Value)
+                {
+                    TileData data = new TileData
+                    {
+                        TargetSize = targetSize,
+                        TileDef = tiledef
+                    };
+                    data.InitialSize = new Size
+                    {
+                        Width = tileSize.Width * data.TileDef.ColumnSpan,
+                        Height = tileSize.Height * data.TileDef.RowSpan
+                    };
+                    allTiles.Add(data);
+                }
+            }
+
             using (var surface = SKSurface.Create((int)this.Config.OutputSize.Width, (int)this.Config.OutputSize.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul))
             using (System.IO.FileStream inputStream = System.IO.File.OpenRead(System.IO.Path.Combine(workDir, this.Config.InputImage)))
             using (var stream = new SKManagedStream(inputStream))
@@ -85,14 +130,14 @@ namespace labelassembler
                 int left = this.Config.Margin.Width / 2;
                 int top = this.Config.Margin.Height / 2;
 
-                Size avaliableSize = this.Config.OutputSize - this.Config.Margin;
-
                 var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
                 using (System.IO.FileStream outStream = new System.IO.FileStream(outputFile, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write))
                 {
                     data.SaveTo(outStream);
                 }
             }
+
+            return 0;
         }
 
     }
