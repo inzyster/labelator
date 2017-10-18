@@ -170,9 +170,10 @@ namespace labelassembler
 
                 foreach (var item in packed)
                 {
+                    System.Diagnostics.Debug.WriteLine(string.Format("item sized {0} in node: {1}", item.TargetSizeWithPadding, item.BinNode));
                     var tiledef = item.TileDef;
                     SKRect source = new SKRect(tiledef.StartColumn * tileSize.Width, tiledef.StartRow * tileSize.Height, (tiledef.EndColumn + 1) * tileSize.Width, (tiledef.EndRow + 1) * tileSize.Height);
-                    SKRect dest = new SKRect(left + item.BinNode.X, top + item.BinNode.Y, left + item.BinNode.X + item.BinNode.Width, top + item.BinNode.Y + item.BinNode.Height);
+                    SKRect dest = new SKRect(left + item.BinNode.X, top + item.BinNode.Y, left + item.BinNode.X + item.TargetSizeWithPadding.Width, top + item.BinNode.Y + item.TargetSizeWithPadding.Height);
                     canvas.DrawBitmap(bitmap, source, dest, paint);
                 }
 

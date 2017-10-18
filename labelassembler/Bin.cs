@@ -82,6 +82,11 @@ namespace labelassembler
         public int Height { get; set; }
         public bool IsOccupied { get; set; }
 
+        public override string ToString()
+        {
+            return $"x: {X}, y: {Y}, width: {Width}, height: {Height}, is occupied:  {IsOccupied}";
+        }
+
     }
 
 }
