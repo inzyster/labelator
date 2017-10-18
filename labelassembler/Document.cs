@@ -103,6 +103,15 @@ namespace labelassembler
             }
         }
 
+        public static readonly SKColor Blue = SKColor.Parse("#7F0000AA");
+        public static readonly SKColor Green = SKColor.Parse("#7F00AA00");
+        public static readonly SKColor Cyan = SKColor.Parse("#7F00AAAA");
+        public static readonly SKColor Red = SKColor.Parse("#7FAA0000");
+        public static readonly SKColor Magenta = SKColor.Parse("#7FAA00AA");
+        public static readonly SKColor Brown = SKColor.Parse("#7FAA5500");
+        public static readonly SKColor Yellow = SKColor.Parse("#7FFFFF55");
+        public static readonly SKColor Black = SKColor.Parse("#7F000000");
+
         public int Process(string outputFile, string workDir)
         {
 
@@ -168,13 +177,25 @@ namespace labelassembler
                 int left = this.Config.Margin.Width / 2;
                 int top = this.Config.Margin.Height / 2;
 
+                SKColor[] colors = new SKColor[] { Blue, Green, Red, Cyan, Magenta, Yellow, Brown, Black };
+
+                int n = 0;
                 foreach (var item in packed)
                 {
                     System.Diagnostics.Debug.WriteLine(string.Format("item sized {0} in node: {1}", item.TargetSizeWithPadding, item.BinNode));
                     var tiledef = item.TileDef;
-                    SKRect source = new SKRect(tiledef.StartColumn * tileSize.Width, tiledef.StartRow * tileSize.Height, (tiledef.EndColumn + 1) * tileSize.Width, (tiledef.EndRow + 1) * tileSize.Height);
-                    SKRect dest = new SKRect(left + item.BinNode.X, top + item.BinNode.Y, left + item.BinNode.X + item.TargetSizeWithPadding.Width, top + item.BinNode.Y + item.TargetSizeWithPadding.Height);
-                    canvas.DrawBitmap(bitmap, source, dest, paint);
+                    SKRect source = SKRect.Create(tiledef.StartColumn * tileSize.Width, tiledef.StartRow * tileSize.Height, tiledef.ColumnSpan * tileSize.Width, tiledef.RowSpan * tileSize.Height);
+                    SKRect dest = SKRect.Create(left + item.BinNode.X, top + item.BinNode.Y, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
+                    //canvas.DrawBitmap(bitmap, source, dest, paint);
+                    paint.StrokeWidth = 1;
+                    paint.Color = colors[n];
+                    paint.Style = SKPaintStyle.StrokeAndFill;
+                    canvas.DrawRect(dest, paint);
+                    n++;
+                    if (n >= colors.Length)
+                    {
+                        n = 0;
+                    }
                 }
 
                 var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);

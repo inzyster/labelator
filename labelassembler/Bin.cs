@@ -32,10 +32,10 @@ namespace labelassembler
         {
             if (rootNode.IsOccupied)
             {
-                var nextNode = FindNodeThatFits(rootNode.Right, itemWidth, itemHeight);
+                var nextNode = FindNodeThatFits(rootNode.Bottom, itemWidth, itemHeight);
                 if (nextNode == null)
                 {
-                    nextNode = FindNodeThatFits(rootNode.Bottom, itemWidth, itemHeight);
+                    nextNode = FindNodeThatFits(rootNode.Right, itemWidth, itemHeight);
                 }
                 return nextNode;
             }
