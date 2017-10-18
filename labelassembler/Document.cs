@@ -45,6 +45,7 @@ namespace labelassembler
         public Size TargetSize { get; set; }
         public Size TargetSizeWithPadding { get; set; }
         public Size InitialSize { get; set; }
+        public Node BinNode { get; set; }
 
     }
 
@@ -143,6 +144,12 @@ namespace labelassembler
             var cmp = new TargetSizeComparer();
             allTiles = allTiles.OrderByDescending(t =>t.TargetSizeWithPadding, cmp).ToList();
 
+            Bin bin = new Bin
+            {
+                Width = avaliableSize.Width,
+                Height = avaliableSize.Height
+            };
+            var packed = bin.Pack(allTiles);
 
             using (var surface = SKSurface.Create((int)this.Config.OutputSize.Width, (int)this.Config.OutputSize.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul))
             using (System.IO.FileStream inputStream = System.IO.File.OpenRead(System.IO.Path.Combine(workDir, this.Config.InputImage)))
@@ -160,6 +167,11 @@ namespace labelassembler
 
                 int left = this.Config.Margin.Width / 2;
                 int top = this.Config.Margin.Height / 2;
+
+                foreach (var item in packed)
+                {
+
+                }
 
                 var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
                 using (System.IO.FileStream outStream = new System.IO.FileStream(outputFile, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.Write))
