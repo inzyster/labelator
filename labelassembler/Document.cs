@@ -155,15 +155,24 @@ namespace labelassembler
             using (System.IO.FileStream inputStream = System.IO.File.OpenRead(System.IO.Path.Combine(workDir, this.Config.InputImage)))
             using (var stream = new SKManagedStream(inputStream))
             using (var bitmap = SKBitmap.Decode(stream))
-            using (var paint = new SKPaint())
+            using (var glyphPaint = new SKPaint())
+            using (var backgroundPaint = new SKPaint())
+            using (var outlinePaint = new SKPaint())
             {
 
-                paint.IsAntialias = false;
+                glyphPaint.IsAntialias = false;
+                outlinePaint.IsAntialias = false;
                 var canvas = surface.Canvas;
                 canvas.Clear(SKColors.White);
 
                 SKColor bgColor = SKColor.Parse(this.Config.BackgroundColor);
                 SKColor outlineColor = SKColor.Parse(this.Config.OutlineColor);
+
+                backgroundPaint.Style = SKPaintStyle.Fill;
+                outlinePaint.Style = SKPaintStyle.Stroke;
+                outlinePaint.Color = outlineColor;
+                outlinePaint.StrokeWidth = this.Config.OutlineSize.Width;
+                backgroundPaint.Color = bgColor;
 
                 int left = this.Config.Margin.Width / 2;
                 int top = this.Config.Margin.Height / 2;
@@ -176,8 +185,13 @@ namespace labelassembler
                     System.Diagnostics.Debug.WriteLine(string.Format("item sized {0} in node: {1}", item.TargetSizeWithPadding, item.BinNode));
                     var tiledef = item.TileDef;
                     SKRect source = SKRect.Create(tiledef.StartColumn * tileSize.Width, tiledef.StartRow * tileSize.Height, tiledef.ColumnSpan * tileSize.Width, tiledef.RowSpan * tileSize.Height);
-                    SKRect dest = SKRect.Create(left + item.BinNode.X, top + item.BinNode.Y, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
-                    canvas.DrawBitmap(bitmap, source, dest, paint);
+                    SKRect destBackground = SKRect.Create(left + item.BinNode.X, top + item.BinNode.Y, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
+                    SKRect destOutline = SKRect.Inflate(destBackground, -this.Config.Spacing.Width, -this.Config.Spacing.Height);
+                    SKRect inner = SKRect.Inflate(destOutline, -this.Config.OutlineSize.Width, -this.Config.OutlineSize.Height);
+                    canvas.DrawRect(destBackground, backgroundPaint);
+                    canvas.DrawRect(destOutline, outlinePaint);
+                    inner = GetRectThatFits(source, inner);
+                    canvas.DrawBitmap(bitmap, source, inner, glyphPaint);
                 }
 
                 var data = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100);
@@ -188,6 +202,11 @@ namespace labelassembler
             }
 
             return 0;
+        }
+
+        private SKRect GetRectThatFits(SKRect source, SKRect dest)
+        {
+            return dest;
         }
 
     }
