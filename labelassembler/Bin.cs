@@ -11,14 +11,15 @@ namespace labelassembler
         public int Width { get; set; }
         public int Height { get; set; }
         public List<TileData> Items { get; set; }
+        private Node RootNode { get; set; }
 
         public List<TileData> Pack(List<TileData> items)
         {
             Items = items.ToList();
-            var rootNode = new Node { Width = this.Width, Height = this.Height, X = 0, Y = 0 };
+            this.RootNode = new Node { Width = this.Width, Height = this.Height, X = 0, Y = 0 };
             foreach (var item in this.Items)
             {
-                var node = FindNodeThatFits(rootNode, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
+                var node = FindNodeThatFits(this.RootNode, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
                 if (node != null)
                 {
                     item.BinNode = SplitNode(node, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
@@ -32,12 +33,7 @@ namespace labelassembler
         {
             if (rootNode.IsOccupied)
             {
-                var nextNode = FindNodeThatFits(rootNode.Bottom, itemWidth, itemHeight);
-                if (nextNode == null)
-                {
-                    nextNode = FindNodeThatFits(rootNode.Right, itemWidth, itemHeight);
-                }
-                return nextNode;
+                return FindNodeThatFits(rootNode.Right, itemWidth, itemHeight) ?? FindNodeThatFits(rootNode.Bottom, itemWidth, itemHeight);
             }
             else if (itemWidth <= rootNode.Width && itemHeight <= rootNode.Height)
             {
@@ -57,7 +53,7 @@ namespace labelassembler
                 X = node.X + itemWidth,
                 Y = node.Y,
                 Width = node.Width - itemWidth,
-                Height = node.Height
+                Height = itemHeight
             };
             node.Bottom = new Node
             {
