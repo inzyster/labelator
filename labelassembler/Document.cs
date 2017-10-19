@@ -186,8 +186,8 @@ namespace labelassembler
                     var tiledef = item.TileDef;
                     SKRect source = SKRect.Create(tiledef.StartColumn * tileSize.Width, tiledef.StartRow * tileSize.Height, tiledef.ColumnSpan * tileSize.Width, tiledef.RowSpan * tileSize.Height);
                     SKRect destBackground = SKRect.Create(left + item.BinNode.X, top + item.BinNode.Y, item.TargetSizeWithPadding.Width, item.TargetSizeWithPadding.Height);
-                    SKRect destOutline = SKRect.Inflate(destBackground, -this.Config.Spacing.Width, -this.Config.Spacing.Height);
-                    SKRect inner = SKRect.Inflate(destOutline, -this.Config.OutlineSize.Width, -this.Config.OutlineSize.Height);
+                    SKRect destOutline = SKRect.Inflate(destBackground, -((float)this.Config.Spacing.Width)/2.0f, -((float)this.Config.Spacing.Height)/2.0f);
+                    SKRect inner = SKRect.Inflate(destOutline, -(float)(this.Config.OutlineSize.Width/2.0f), -((float)this.Config.OutlineSize.Height)/2.0f);
                     canvas.DrawRect(destBackground, backgroundPaint);
                     canvas.DrawRect(destOutline, outlinePaint);
                     inner = GetRectThatFits(source, inner);
