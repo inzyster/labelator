@@ -206,7 +206,14 @@ namespace labelassembler
 
         private SKRect GetRectThatFits(SKRect source, SKRect dest)
         {
-            return dest;
+            return dest.AspectFit(source.Size);
+            float scale = (float)Math.Floor(dest.Height / source.Height);
+            float diff = source.Height * (scale - 1);
+            SKRect result = SKRect.Inflate(source, diff, diff);
+            float deltaX = dest.MidX - result.MidX;
+            float deltaY = dest.MidY - result.MidY;
+            result.Offset(deltaX, deltaY);
+            return result;
         }
 
     }
